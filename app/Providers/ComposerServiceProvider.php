@@ -28,6 +28,6 @@ class ComposerServiceProvider extends ServiceProvider
       //v  view()->composer('*', function($view) use($categories){
        //v         $view('categories', $categories);
        //v });
-       view()->composer('*', 'App\Http\Views\CategoryViewComposer@compose');
+       view()->composer('layouts.front', 'App\Http\Views\CategoryViewComposer@compose');
     }
 }

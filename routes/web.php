@@ -25,6 +25,7 @@ Route::prefix('checkout')->name('checkout.')->group(function(){
 Route::get('/', 'CheckoutController@index')->name('index');
 Route::post('/proccess', 'CheckoutController@proccess')->name('proccess');
 Route::get('/thanks', 'CheckoutController@thanks')->name('thanks');
+Route::post('/notification', 'CheckoutController@notification')->name('notification');
 });
 
 Route::get('/model', function(){
@@ -96,8 +97,11 @@ Route::get('/model', function(){
 //Route::post('/admin/stores/store', 'Admin\\StoreController@store');
 
 
+Route::get('my-orders', 'UserOrderController@index')->name('user.orders')->middleware('auth');
 
-Route::group(['middleware' => ['auth']], function(){
+Route::group(['middleware' => ['auth', 'access.control.store.admin']], function(){
+
+
 
 Route::prefix('admin')->name('admin.')->namespace('Admin')->group(function(){
     /* Route::prefix('stores')->name('stores.')->group(function(){
@@ -108,9 +112,11 @@ Route::prefix('admin')->name('admin.')->namespace('Admin')->group(function(){
           Route::post('/update/{store}', 'StoreController@update')->name('update');
           Route::get('/destroy/{store}', 'StoreController@destroy')->name('destroy');
       });*/
-
+      Route::get('notifications', 'NotificationController@notifications')->name('notifications.index');
+      Route::get('notifications/read-all', 'NotificationController@readAll')->name('notifications.read.all');
+      Route::get('notifications/read/{notification}', 'NotificationController@read')->name('notifications.read');
       Route::resource('stores', 'StoreController');
-
+      Route::get('orders/my', 'OrdersController@index')->name('orders.my');
       Route::resource('products', 'ProductController');
       Route::resource('categories', 'CategoryController');
       Route::post('photos/remove', 'ProductPhotoController@removePhoto')->name('photo.remove');
@@ -124,3 +130,14 @@ Route::prefix('admin')->name('admin.')->namespace('Admin')->group(function(){
 Auth::routes();
 
 //Route::get('/home', 'HomeController@index')->name('home');
+Route::get('not', function(){
+
+   // $user->notify(new  \App\Notifications\StoreReceiveNewOrder());
+  // $notifications = $user->notifications->first();
+  // $notifications->markAsRead();
+   // $notification = $user->unreadNotifications->first();
+  // $notification->markAsRead();
+
+
+
+});

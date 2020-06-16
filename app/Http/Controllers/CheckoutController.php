@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Payment\PagSeguro\CreditCard;
+use App\Payment\PagSeguro\Notification;
 use Exception;
 use Illuminate\Http\Request;
+use App\Store;
+use Ramsey\Uuid\Uuid;
 
 class CheckoutController extends Controller
 {
@@ -31,18 +34,24 @@ class CheckoutController extends Controller
         $dataPost = $request->all();
         $user = auth()->user();
         $cartItems = session()->get('cart');
-        $reference = 'XPTO';
-
+        $stores = array_unique(array_column($cartItems, 'store_id'));
+        $reference = strval(Uuid::uuid4());
         $creditCardPayment = new CreditCard($cartItems, $user, $dataPost, $reference);
         $result = $creditCardPayment->doPayment();
         $userOrder = [
          'reference' => $reference,
          'pagseguro_code' => $result->getCode(),
          'pagseguro_status' => $result->getStatus(),
-         'items' => serialize($cartItems),
-         'store_id' => 42
+         'items' => serialize($cartItems)
+
         ];
-        $user->orders()->create($userOrder);
+        $userOrder = $user->orders()->create($userOrder);
+
+        $userOrder->stores()->sync($stores);
+
+        $store = (new Store())->notifyStoreOwners($stores);
+
+
         session()->forget('cart');
         session()->forget('pagseguro_session_code');
 
@@ -71,6 +80,8 @@ class CheckoutController extends Controller
     public function thanks(){
         return view('thanks');
     }
+
+
 
     private function makePagseguroSession()
     {

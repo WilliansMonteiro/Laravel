@@ -23,8 +23,13 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $userStore = auth()->user()->store;//acessando loja do usuario autenticado
-        $products =  $userStore->products()->paginate(10);//acessando produtos dessa loja
+        $user = auth()->user();
+        if(!$user->store()->exists()) {
+            flash('Necessário criar uma loja para cadastrar produtos');
+            return redirect()->route('admin.stores.index');
+        }
+
+        $products =  $user->store->products()->paginate(10);//acessando produtos dessa loja
         //$products = DB::table('products')->leftJoin('stores', 'products.store_id', '=', 'stores.id')->
         //select('products.*', 'stores.name as NomeLoja')->get();
         return view('admin.products.index', compact('products'));
@@ -53,6 +58,8 @@ class ProductController extends Controller
 
           $data = $request->all();
           $categories = $request->get('categories', null);
+          $data['price'] = formatPriceToDatabase($data['price']);
+
           $store = auth()->user()->store;//acessando a loja para usuario autenticado
           $product = $store->products()->create($data);//criando produto para essa loja
           //o metodo create retorna um objeto com os dados do produto recem criado
